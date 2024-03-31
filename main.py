@@ -105,6 +105,16 @@ class Login:
 
         self.login_tk.mainloop()
 
+# class UserInter:
+#     def __init__(self,tn,name,password):
+#         self.tn = tn
+#         self.login_tk = Tk()
+#         self.username = name
+#         self.userpassward = password
+#
+#     def main_window(self):
+
+
 
 if __name__ == "__main__":
     conn = Connect()
