@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import showerror, showinfo
+import threading
 import telnetlib
 import time
 
@@ -45,7 +46,8 @@ class Login:
             print('successful login！')
             showinfo(title='hint', message='successful login!')
             self.login_tk.destroy()
-            print('Go to Sleep!')
+            user_inter = UserInter(tn,input_username,input_password)
+            user_inter.main_window()
         elif system_feedback != "You have 0 unread message.":
             showerror(title='hint', message='wrong username or password!')
             self.login_tk.mainloop()
@@ -105,14 +107,134 @@ class Login:
 
         self.login_tk.mainloop()
 
-# class UserInter:
-#     def __init__(self,tn,name,password):
-#         self.tn = tn
-#         self.login_tk = Tk()
-#         self.username = name
-#         self.userpassward = password
-#
-#     def main_window(self):
+def window_show_center(login_tk,length = 500, width = 300):
+    sw = login_tk.winfo_screenwidth()
+    sh = login_tk.winfo_screenheight()
+    ww = length
+    wh = width
+    x = (sw - ww) / 2
+    y = (sh - wh) / 2
+    login_tk.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
+
+class UserInter:
+    def __init__(self,tn,name,password):
+        self.tn = tn
+        self.login_tk = Tk()
+        self.username = name
+        self.userpassward = password
+        self.thread = None
+
+    def show_center(self):
+        sw = self.login_tk.winfo_screenwidth()
+        sh = self.login_tk.winfo_screenheight()
+        ww = 1200
+        wh = 800
+        x = (sw - ww) / 2
+        y = (sh - wh) / 2
+        self.login_tk.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
+
+        # utility function
+    def who_window(self):
+        who_window = Toplevel(self.login_tk)
+        window_show_center(who_window)
+        who_window.title('Show All the Users')
+        self.tn.write(b"who\n\n")
+        time.sleep(0.1)
+        contents = self.tn.read_very_eager()
+        content_list = contents.splitlines()
+        content_list_one = content_list[0].decode('utf-8')
+        print(content_list_one)
+        content_index = content_list_one.find('total:')
+        online_user_num = content_list_one[content_index + len("total:") + 1]
+        text1 = Label(who_window,text=f'current online users: {online_user_num}',font=('Arial',18,'bold'))
+        text1.place(relx=0.05, rely=0.1)
+        text2 = Label(who_window,text= 'current online user accounts:',font=('Arial',18,'bold'))
+        text2.place(relx=0.05, rely=0.3)
+        var = StringVar()
+        content_list_two = content_list[1].decode('utf-8')
+        content_list_two = content_list_two.replace(' ',', ')
+        content_list_two = content_list_two[:-2]
+        var.set(content_list_two)
+        l = Label(who_window, textvariable=var, font=('Arial', 23))
+        l.place(relx=0.05, rely=0.45)
+    def exit_window(self):
+        tn.write(b"quit\n")
+        time.sleep(0.1)
+        tn.write(b"exit\n")
+        self.login_tk.destroy()
+
+    def help_window(self):
+        help_window = Toplevel(self.login_tk)
+        window_show_center(help_window,1500,1200)
+        help_window.title('Help')
+        self.tn.write(b"help\n\n")
+        time.sleep(0.1)
+        contents = self.tn.read_very_eager()
+        var = StringVar()
+        var.set(contents)
+        l = Label(help_window, textvariable=var, font=('Arial', 20))
+        l.place(relx=0.05, rely=0.05)
+
+    def main_window(self):
+        self.tn.write(b"shout test\n\n")
+
+
+    def monitor(self):
+        origin_content = ''
+        while(True):
+            content = self.tn.read_very_eager().decode('utf-8')
+            content = content[8:]
+            if len(content) == 0:
+                content = origin_content
+            else:
+                origin_content = content
+            message1 = Label(self.login_tk, text=content, bg='grey', font=('Arial', 20), width=30, height=2)
+            message1.place(relx=0.4, rely=0.1)
+            time.sleep(2)
+
+    def main_window(self):
+
+
+        self.login_tk.title('User Interface')
+        self.show_center()
+        self.login_tk.resizable(False, False)
+
+        # user profile
+        load1 = Image.open('picture/userprofile.png')
+        render1 = ImageTk.PhotoImage(load1.resize(tuple([int(0.9 * x) for x in load1.size])))
+        img1 = Label(self.login_tk, image=render1)
+        img1.image = render1
+        img1.place(relx=0.05, rely=0.1)
+        text1 = ttk.Label(self.login_tk, text=f"User Name:  {self.username}",font=('Arial', 18))
+        text1.place(relx=0.063, rely=0.37)
+
+
+        # function area
+        who_btn = Button(self.login_tk, text='who', command=lambda: [self.who_window()],font=('_Times New Roman', 18))
+        who_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
+
+        help_btn = Button(self.login_tk, text='help', command=lambda: [self.help_window()], font=('_Times New Roman', 18))
+        help_btn.place(relx=0.8, rely=0.3, relwidth=0.15, relheight=0.07)
+
+        exit_btn = Button(self.login_tk, text='exit',command=lambda: [self.exit_window()],font=('_Times New Roman', 18))
+        exit_btn.place(relx=0.8, rely=0.20, relwidth=0.15, relheight=0.07)
+
+        mail_btn = Button(self.login_tk, text='mail', command=lambda: [self.main_window()],font=('_Times New Roman', 18))
+        mail_btn.place(relx=0.8, rely=0.40, relwidth=0.15, relheight=0.07)
+
+
+
+        # open a thread to parallel computing
+        thread = threading.Thread(target=self.monitor)
+        thread.start()
+
+
+
+        self.login_tk.mainloop()
+
+
+
+
 
 
 
