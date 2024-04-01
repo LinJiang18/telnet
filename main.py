@@ -193,13 +193,34 @@ class UserInter:
         send_btn = Button(shout_window, text='send', command=lambda: [shout_send()],font=('Arial', 13))
         send_btn.place(relx=0.35, rely=0.75, relwidth=0.2, relheight=0.1)
 
+    def mail_window(self):
+        mail_window = Toplevel(self.login_tk)
+        window_show_center(mail_window)
+        mail_window.title('Mail')
+        mail_people_label = Label( mail_window, text='Sent to: ',font=('Arial', 16,'bold'))
+        mail_people_label.place(relx=0.05, rely=0.15, relwidth=0.2, relheight=0.05)
+        mail_people_info = StringVar()
+        mail_people_entry = ttk.Entry(mail_window, textvariable=mail_people_info, font=('_Times New Roman', 15))
+        mail_people_entry.place(relx=0.25, rely=0.11, relwidth=0.3, relheight=0.12)
+
+        mail_title_label = Label(mail_window, text='Title: ', font=('Arial', 16, 'bold'))
+        mail_title_label.place(relx=0.05, rely=0.35, relwidth=0.2, relheight=0.05)
+        mail_title_info = StringVar()
+        mail_title_entry = ttk.Entry(mail_window, textvariable=mail_title_info, font=('_Times New Roman', 15))
+        mail_title_entry.place(relx=0.25, rely=0.31, relwidth=0.5, relheight=0.12)
+
+
+
+
+
 
     def monitor(self):
         origin_content = ''
         while(True):
             content = self.tn.read_very_eager().decode('utf-8')
-            usernameString = content[content.find('<lin: '):content.find('<lin: ') + 8]
+            usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 5 + len(self.username)]
             content = content.replace(usernameString, '')
+            print(f'content:{content}')
             # if '<' + self.username in content:
             #     content = content[8:]
             if len(content) == 0:
@@ -240,16 +261,16 @@ class UserInter:
         shout_btn = Button(self.login_tk, text='shout', command=lambda: [self.shout_window()],font=('_Times New Roman', 18))
         shout_btn.place(relx=0.8, rely=0.40, relwidth=0.15, relheight=0.07)
 
-        mail_btn = Button(self.login_tk, text='mail', command=lambda: [self.main_window()],font=('_Times New Roman',18))
+        mail_btn = Button(self.login_tk, text='mail', command=lambda: [self.mail_window()],font=('_Times New Roman',18))
         mail_btn.place(relx=0.8, rely=0.50, relwidth=0.15, relheight=0.07)
 
 
 
         # open a thread to parallel computing
         t = threading.Thread(target=self.monitor)
-
+        t.daemon=True
         t.start()
-        # t.join()
+
 
 
 
