@@ -41,14 +41,19 @@ class Login:
         system_feedback = self.tn.read_very_eager().decode('utf8')
         system_feedback_num = system_feedback.find("\n")
         system_feedback = system_feedback[:system_feedback_num]
-        print(system_feedback)
-        if system_feedback == "You have 0 unread message.":
+        system_feedback_one = system_feedback.find("You have")
+        system_feedback_two = system_feedback.find("unread message.")
+        message_num = system_feedback[system_feedback_one + 9]
+        print(system_feedback_one)
+        print(system_feedback_two)
+        print(message_num)
+        if (system_feedback_one != -1) and (system_feedback_two != -1):
             print('successful login！')
             showinfo(title='hint', message='successful login!')
             self.login_tk.destroy()
             user_inter = UserInter(tn,input_username,input_password)
             user_inter.main_window()
-        elif system_feedback != "You have 0 unread message.":
+        elif system_feedback_one == -1 or system_feedback_two == -1:
             showerror(title='hint', message='wrong username or password!')
             self.login_tk.mainloop()
         else:
@@ -178,39 +183,71 @@ class UserInter:
     def shout_window(self):
         def shout_send():
             input_shout_content = shout_content.get()
-            tn.write(b"shout " + input_shout_content.encode('ascii') + b"\n\n")
+            temp_shout_content = b"shout " + input_shout_content.encode('ascii') + b"\n\n"
+            print(temp_shout_content)
+            tn.write(temp_shout_content)
             time.sleep(0.1)
             shout_window.destroy()
 
         shout_window = Toplevel(self.login_tk)
         window_show_center(shout_window)
         shout_window.title('Shout')
-        shout_label = Label(shout_window, text='shout content', font=('Arial', 15))
-        shout_label.place(relx=0.2, rely=0.3, relwidth=0.3, relheight=0.05)
+        shout_label = Label(shout_window, text='shout contents: ', font=('Arial', 16, 'bold'))
+        shout_label.place(relx=0.25, rely=0.3, relwidth=0.35, relheight=0.05)
         shout_content = StringVar()
         shout_input = ttk.Entry(shout_window, textvariable=shout_content, font=('_Times New Roman', 15))
-        shout_input.place(relx=0.2, rely=0.4, relwidth=0.5, relheight=0.12)
-        send_btn = Button(shout_window, text='send', command=lambda: [shout_send()],font=('Arial', 13))
-        send_btn.place(relx=0.35, rely=0.75, relwidth=0.2, relheight=0.1)
+        shout_input.place(relx=0.25, rely=0.4, relwidth=0.5, relheight=0.12)
+        send_btn = Button(shout_window, text='send', command=lambda: [shout_send()],font=('Arial', 15))
+        send_btn.place(relx=0.40, rely=0.75, relwidth=0.2, relheight=0.1)
+
+
+
+
 
     def mail_window(self):
         mail_window = Toplevel(self.login_tk)
-        window_show_center(mail_window)
+        window_show_center(mail_window,800,500)
         mail_window.title('Mail')
+
         mail_people_label = Label( mail_window, text='Sent to: ',font=('Arial', 16,'bold'))
-        mail_people_label.place(relx=0.05, rely=0.15, relwidth=0.2, relheight=0.05)
+        mail_people_label.place(relx=0.05, rely=0.135, relwidth=0.15, relheight=0.05)
         mail_people_info = StringVar()
         mail_people_entry = ttk.Entry(mail_window, textvariable=mail_people_info, font=('_Times New Roman', 15))
-        mail_people_entry.place(relx=0.25, rely=0.11, relwidth=0.3, relheight=0.12)
+        mail_people_entry.place(relx=0.20, rely=0.125, relwidth=0.3, relheight=0.08)
 
         mail_title_label = Label(mail_window, text='Title: ', font=('Arial', 16, 'bold'))
-        mail_title_label.place(relx=0.05, rely=0.35, relwidth=0.2, relheight=0.05)
+        mail_title_label.place(relx=0.05, rely=0.335, relwidth=0.2, relheight=0.05)
         mail_title_info = StringVar()
         mail_title_entry = ttk.Entry(mail_window, textvariable=mail_title_info, font=('_Times New Roman', 15))
-        mail_title_entry.place(relx=0.25, rely=0.31, relwidth=0.5, relheight=0.12)
+        mail_title_entry.place(relx=0.20, rely=0.325, relwidth=0.5, relheight=0.08)
+
+        mail_content_label = Label(mail_window, text='Contents: ', font=('Arial', 16, 'bold'))
+        mail_content_label.place(relx=0.02, rely=0.535, relwidth=0.2, relheight=0.05)
+        mail_content_text = Text(mail_window,width=37,height=3,font=('_Times New Roman', 15))
+        mail_content_text.place(relx=0.20, rely=0.525)
+
+        def sent_mail_window():
+            mail_people = mail_people_info.get()
+            mail_title = mail_title_info.get()
+            mail_content = (mail_content_text.get("0.0", "end")).split("\n")
+            mail_content.pop()
+            send_message = b"mail " + mail_people.encode('ascii') + b" " + mail_title.encode('ascii') + b'\n\n'
+            print(send_message)
+            self.tn.write(send_message)
+            time.sleep(0.1)
+            for content in mail_content:
+                self.tn.write(content.encode('ascii') + b"\n\n")
+                time.sleep(0.05)
+                print(content.encode('ascii') + b"\n\n")
+            self.tn.write(b".\n\n")
+            print(b".\n\n")
+            showinfo(title='hint', message='Message sent!')
+            time.sleep(1)
+            mail_window.destroy()
 
 
-
+        mail_btn = Button(mail_window, text='send', command=lambda: [sent_mail_window()], font=('_Times New Roman', 18))
+        mail_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
 
 
 
@@ -220,15 +257,16 @@ class UserInter:
             content = self.tn.read_very_eager().decode('utf-8')
             usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 5 + len(self.username)]
             content = content.replace(usernameString, '')
-            print(f'content:{content}')
             # if '<' + self.username in content:
             #     content = content[8:]
             if len(content) == 0:
                 content = origin_content
             else:
                 origin_content = content
-            message1 = Label(self.login_tk, text=content, bg='grey', font=('Arial', 20), width=30, height=2)
-            message1.place(relx=0.4, rely=0.1)
+            message_label = Label(self.login_tk, text='Message Box', font=('Arial', 14, 'bold'))
+            message_label.place(relx=0.42, rely=0.06, relwidth=0.15, relheight=0.08)
+            message = Label(self.login_tk, text=content, bg='white', font=('Arial', 20), width=30, height=4)
+            message.place(relx=0.30, rely=0.14)
             time.sleep(2)
 
     def main_window(self):
@@ -244,7 +282,7 @@ class UserInter:
         img1 = Label(self.login_tk, image=render1)
         img1.image = render1
         img1.place(relx=0.05, rely=0.1)
-        text1 = ttk.Label(self.login_tk, text=f"User Name:  {self.username}",font=('Arial', 18))
+        text1 = ttk.Label(self.login_tk, text=f"User Name:  {self.username}",font=('Arial', 18, 'bold'))
         text1.place(relx=0.063, rely=0.37)
 
 
@@ -261,7 +299,7 @@ class UserInter:
         shout_btn = Button(self.login_tk, text='shout', command=lambda: [self.shout_window()],font=('_Times New Roman', 18))
         shout_btn.place(relx=0.8, rely=0.40, relwidth=0.15, relheight=0.07)
 
-        mail_btn = Button(self.login_tk, text='mail', command=lambda: [self.mail_window()],font=('_Times New Roman',18))
+        mail_btn = Button(self.login_tk, text='send mail', command=lambda: [self.mail_window()],font=('_Times New Roman',18))
         mail_btn.place(relx=0.8, rely=0.50, relwidth=0.15, relheight=0.07)
 
 
