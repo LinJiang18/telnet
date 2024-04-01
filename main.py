@@ -175,15 +175,33 @@ class UserInter:
         l = Label(help_window, textvariable=var, font=('Arial', 20))
         l.place(relx=0.05, rely=0.05)
 
-    def main_window(self):
-        self.tn.write(b"shout test\n\n")
+    def shout_window(self):
+        def shout_send():
+            input_shout_content = shout_content.get()
+            tn.write(b"shout " + input_shout_content.encode('ascii') + b"\n\n")
+            time.sleep(0.1)
+            shout_window.destroy()
+
+        shout_window = Toplevel(self.login_tk)
+        window_show_center(shout_window)
+        shout_window.title('Shout')
+        shout_label = Label(shout_window, text='shout content', font=('Arial', 15))
+        shout_label.place(relx=0.2, rely=0.3, relwidth=0.3, relheight=0.05)
+        shout_content = StringVar()
+        shout_input = ttk.Entry(shout_window, textvariable=shout_content, font=('_Times New Roman', 15))
+        shout_input.place(relx=0.2, rely=0.4, relwidth=0.5, relheight=0.12)
+        send_btn = Button(shout_window, text='send', command=lambda: [shout_send()],font=('Arial', 13))
+        send_btn.place(relx=0.35, rely=0.75, relwidth=0.2, relheight=0.1)
 
 
     def monitor(self):
         origin_content = ''
         while(True):
             content = self.tn.read_very_eager().decode('utf-8')
-            content = content[8:]
+            usernameString = content[content.find('<lin: '):content.find('<lin: ') + 8]
+            content = content.replace(usernameString, '')
+            # if '<' + self.username in content:
+            #     content = content[8:]
             if len(content) == 0:
                 content = origin_content
             else:
@@ -219,14 +237,19 @@ class UserInter:
         exit_btn = Button(self.login_tk, text='exit',command=lambda: [self.exit_window()],font=('_Times New Roman', 18))
         exit_btn.place(relx=0.8, rely=0.20, relwidth=0.15, relheight=0.07)
 
-        mail_btn = Button(self.login_tk, text='mail', command=lambda: [self.main_window()],font=('_Times New Roman', 18))
-        mail_btn.place(relx=0.8, rely=0.40, relwidth=0.15, relheight=0.07)
+        shout_btn = Button(self.login_tk, text='shout', command=lambda: [self.shout_window()],font=('_Times New Roman', 18))
+        shout_btn.place(relx=0.8, rely=0.40, relwidth=0.15, relheight=0.07)
+
+        mail_btn = Button(self.login_tk, text='mail', command=lambda: [self.main_window()],font=('_Times New Roman',18))
+        mail_btn.place(relx=0.8, rely=0.50, relwidth=0.15, relheight=0.07)
 
 
 
         # open a thread to parallel computing
-        thread = threading.Thread(target=self.monitor)
-        thread.start()
+        t = threading.Thread(target=self.monitor)
+
+        t.start()
+        # t.join()
 
 
 
