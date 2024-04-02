@@ -183,7 +183,7 @@ class UserInter:
             input_shout_content = shout_content.get()
             temp_shout_content = b"shout " + input_shout_content.encode('ascii') + b"\n\n"
             print(temp_shout_content)
-            tn.write(temp_shout_content)
+            self.tn.write(temp_shout_content)
             time.sleep(0.1)
             shout_window.destroy()
 
@@ -240,8 +240,9 @@ class UserInter:
             self.tn.write(b".\n\n")
             print(b".\n\n")
             showinfo(title='hint', message='Message sent!')
-            time.sleep(1)
+            time.sleep(0.5)
             mail_window.destroy()
+
 
 
         mail_btn = Button(mail_window, text='send', command=lambda: [sent_mail_window()], font=('_Times New Roman', 18))
@@ -279,6 +280,86 @@ class UserInter:
         message.place(relx=0.16, rely=0.15)
 
 
+    def send_match_info(self):
+        matching_window = Toplevel(self.login_tk)
+        window_show_center(matching_window)
+        matching_window.title('Matching Window')
+
+        tn.write(b"who\n\n")
+        time.sleep(0.1)
+        online_user_info = tn.read_very_eager().decode('utf-8')
+        online_user_info = online_user_info.split('\n')
+        online_user_info = online_user_info[1]
+        online_user_info_list = online_user_info.split(' ')
+        online_user_info_list = [x for x in online_user_info_list if x != '']
+        online_user_info_list = [x for x in online_user_info_list if x != self.username]
+
+        message1 = Label(matching_window, text='opponent:', font=('Arial', 16, 'bold'))
+        message1.place(relx=0.10, rely=0.15)
+
+        opponent = StringVar()
+        cmb1 = ttk.Combobox(matching_window, textvariable=opponent, font=('Arial', 18))
+        cmb1.place(relx=0.35, rely=0.15)
+        cmb1['value'] = online_user_info_list
+
+        message2 = Label(matching_window, text='side:', font=('Arial', 16, 'bold'))
+        message2.place(relx=0.10, rely=0.35)
+
+        side = StringVar()
+        cmb2 = ttk.Combobox(matching_window, textvariable=side, font=('Arial', 14))
+        cmb2.place(relx=0.25, rely=0.35,relwidth=0.22, relheight=0.10)
+        cmb2['value'] = ['white','black']
+
+        message3 = Label(matching_window, text='duration:', font=('Arial', 16, 'bold'))
+        message3.place(relx=0.50, rely=0.35)
+        duration = StringVar()
+        cmb3 = ttk.Entry(matching_window, textvariable=duration, font=('Arial', 14))
+        cmb3.place(relx=0.70, rely=0.35,relwidth=0.22, relheight=0.10)
+
+
+        def send_match_info_to_sb():
+            o = opponent.get()
+            s = side.get()
+            if s == 'white':
+                s = 'w'
+            elif s == 'black':
+                s = 'b'
+            else:
+                pass
+            d = duration.get()
+            send_message = f"match {o} {s} {d}\n\n".encode('ascii')
+            self.tn.write(send_message)
+            print(send_message)
+            time.sleep(0.5)
+            matching_window.destroy()
+
+
+
+
+        send_btn = Button(matching_window, text='send', command=lambda: [send_match_info_to_sb()],
+                           font=('_Times New Roman', 22))
+        send_btn.place(relx=0.4, rely=0.60, relwidth=0.2, relheight=0.1)
+
+
+
+
+
+    def accept_the_game(self):
+        accept_window = Toplevel(self.login_tk)
+        window_show_center(accept_window)
+        accept_window.title('Matching Window')
+        #
+        # def yes_function():
+        #
+        #
+        # yes_btn = Button(accept_window, text='Yes', command=lambda: [yes_function()],
+        #                         font=('_Times New Roman', 18))
+        # yes_btn.place(relx=0.8, rely=0.60, relwidth=0.2, relheight=0.1)
+        #
+        # No_btn = Button(accept_window, text='No', command=lambda: [no_function()],
+        #                    font=('_Times New Roman', 22))
+        # No_btn.place(relx=0.4, rely=0.40, relwidth=0.2, relheight=0.1)
+
 
 
 
@@ -289,16 +370,22 @@ class UserInter:
             content = self.tn.read_very_eager().decode('utf-8')
             usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 5 + len(self.username)]
             content = content.replace(usernameString, '')
-            # if '<' + self.username in content:
-            #     content = content[8:]
+
             if len(content) == 0:
                 content = origin_content
             else:
                 origin_content = content
+
             message_label = Label(self.login_tk, text='Message Box', font=('Arial', 14, 'bold'))
             message_label.place(relx=0.42, rely=0.06, relwidth=0.15, relheight=0.08)
             message = Label(self.login_tk, text=content, bg='white', font=('Arial', 20), width=30, height=4)
             message.place(relx=0.30, rely=0.14)
+
+            # if content.find('invite you for a game') != -1:
+            #     self.accept_the_game()
+            if content.find('Black'):
+                game()
+
             time.sleep(2)
 
     def main_window(self):
@@ -338,6 +425,10 @@ class UserInter:
 
         mail_check_btn = Button(self.login_tk, text='check mail', command=lambda: [self.mail_check_window()],font=('_Times New Roman', 18))
         mail_check_btn.place(relx=0.8, rely=0.60, relwidth=0.15, relheight=0.07)
+
+        match_btn = Button(self.login_tk, text='begin the game', command=lambda: [self.send_match_info()],font=('_Times New Roman', 22))
+        match_btn.place(relx=0.4, rely=0.40, relwidth=0.2, relheight=0.1)
+
 
 
 
