@@ -7,15 +7,15 @@ import time
 
 from PIL import Image, ImageTk
 
+
 class Connect:
     def __init__(self):
         self.HOST = "170.106.117.254"
         self.PORT = 8081
 
 
-
 class Login:
-    def __init__(self,tn):
+    def __init__(self, tn):
         self.tn = tn
         self.login_tk = Tk()
         self.username = None
@@ -48,13 +48,14 @@ class Login:
             print('successful login！')
             showinfo(title='hint', message='successful login!')
             self.login_tk.destroy()
-            user_inter = UserInter(tn,input_username,input_password,message_num)
+            user_inter = UserInter(tn, input_username, input_password, message_num)
             user_inter.main_window()
         elif system_feedback_one == -1 or system_feedback_two == -1:
             showerror(title='hint', message='wrong username or password!')
             self.login_tk.mainloop()
         else:
             pass
+
     #
     # def connect(self):
     #     self.tn = Connect().tn
@@ -71,15 +72,16 @@ class Login:
         y = (sh - wh) / 2
         self.login_tk.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
 
-    def return_bind(self,event):
+    def return_bind(self, event):
         self.client_login()
+
     def login_window(self):  # 设置登录窗口
         self.login_tk.title('User Login')
         self.show_center()
         self.login_tk.resizable(False, False)
         # 字样
-        account_label = Label(self.login_tk, text='account',font=('Arial', 11))
-        name_label = Label(self.login_tk, text='password',font=('Arial', 11))
+        account_label = Label(self.login_tk, text='account', font=('Arial', 11))
+        name_label = Label(self.login_tk, text='password', font=('Arial', 11))
         account_label.place(relx=0.19, rely=0.3, relwidth=0.2, relheight=0.05)
         name_label.place(relx=0.19, rely=0.47, relwidth=0.2, relheight=0.05)
         self.username = StringVar()
@@ -99,7 +101,6 @@ class Login:
         img.image = render
         img.place(relx=0.28, rely=0.1)
 
-
         login_btn = ttk.Button(self.login_tk, text='Login', command=lambda: [self.client_login()])
         login_btn.place(relx=0.4, rely=0.72, relwidth=0.2, relheight=0.07)
         register_btn = ttk.Button(self.login_tk, text='Register', command=lambda: [self.client_login()])
@@ -109,7 +110,8 @@ class Login:
 
         self.login_tk.mainloop()
 
-def window_show_center(login_tk,length = 500, width = 300):
+
+def window_show_center(login_tk, length=500, width=300):
     sw = login_tk.winfo_screenwidth()
     sh = login_tk.winfo_screenheight()
     ww = length
@@ -118,14 +120,16 @@ def window_show_center(login_tk,length = 500, width = 300):
     y = (sh - wh) / 2
     login_tk.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
 
+
 class UserInter:
-    def __init__(self,tn,name,password,message_num):
+    def __init__(self, tn, name, password, message_num):
         self.tn = tn
         self.login_tk = Tk()
         self.username = name
         self.userpassward = password
         self.message_num = message_num
         self.thread = None
+        self.accept_number = 1
 
     def show_center(self):
         sw = self.login_tk.winfo_screenwidth()
@@ -137,6 +141,7 @@ class UserInter:
         self.login_tk.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
 
         # utility function
+
     def who_window(self):
         who_window = Toplevel(self.login_tk)
         window_show_center(who_window)
@@ -149,17 +154,18 @@ class UserInter:
         print(content_list_one)
         content_index = content_list_one.find('total:')
         online_user_num = content_list_one[content_index + len("total:") + 1]
-        text1 = Label(who_window,text=f'current online users: {online_user_num}',font=('Arial',18,'bold'))
+        text1 = Label(who_window, text=f'current online users: {online_user_num}', font=('Arial', 18, 'bold'))
         text1.place(relx=0.05, rely=0.1)
-        text2 = Label(who_window,text= 'current online user accounts:',font=('Arial',18,'bold'))
+        text2 = Label(who_window, text='current online user accounts:', font=('Arial', 18, 'bold'))
         text2.place(relx=0.05, rely=0.3)
         var = StringVar()
         content_list_two = content_list[1].decode('utf-8')
-        content_list_two = content_list_two.replace(' ',', ')
+        content_list_two = content_list_two.replace(' ', ', ')
         content_list_two = content_list_two[:-2]
         var.set(content_list_two)
         l = Label(who_window, textvariable=var, font=('Arial', 23))
         l.place(relx=0.05, rely=0.45)
+
     def exit_window(self):
         tn.write(b"quit\n")
         time.sleep(0.1)
@@ -168,7 +174,7 @@ class UserInter:
 
     def help_window(self):
         help_window = Toplevel(self.login_tk)
-        window_show_center(help_window,1500,1200)
+        window_show_center(help_window, 1500, 1200)
         help_window.title('Help')
         self.tn.write(b"help\n\n")
         time.sleep(0.1)
@@ -195,19 +201,15 @@ class UserInter:
         shout_content = StringVar()
         shout_input = ttk.Entry(shout_window, textvariable=shout_content, font=('_Times New Roman', 15))
         shout_input.place(relx=0.25, rely=0.4, relwidth=0.5, relheight=0.12)
-        send_btn = Button(shout_window, text='send', command=lambda: [shout_send()],font=('Arial', 15))
+        send_btn = Button(shout_window, text='send', command=lambda: [shout_send()], font=('Arial', 15))
         send_btn.place(relx=0.40, rely=0.75, relwidth=0.2, relheight=0.1)
-
-
-
-
 
     def mail_window(self):
         mail_window = Toplevel(self.login_tk)
-        window_show_center(mail_window,800,500)
+        window_show_center(mail_window, 800, 500)
         mail_window.title('Mail')
 
-        mail_people_label = Label( mail_window, text='Sent to: ',font=('Arial', 16,'bold'))
+        mail_people_label = Label(mail_window, text='Sent to: ', font=('Arial', 16, 'bold'))
         mail_people_label.place(relx=0.05, rely=0.135, relwidth=0.15, relheight=0.05)
         mail_people_info = StringVar()
         mail_people_entry = ttk.Entry(mail_window, textvariable=mail_people_info, font=('_Times New Roman', 15))
@@ -221,7 +223,7 @@ class UserInter:
 
         mail_content_label = Label(mail_window, text='Contents: ', font=('Arial', 16, 'bold'))
         mail_content_label.place(relx=0.02, rely=0.535, relwidth=0.2, relheight=0.05)
-        mail_content_text = Text(mail_window,width=37,height=3,font=('_Times New Roman', 15))
+        mail_content_text = Text(mail_window, width=37, height=3, font=('_Times New Roman', 15))
         mail_content_text.place(relx=0.20, rely=0.525)
 
         def sent_mail_window():
@@ -243,8 +245,6 @@ class UserInter:
             time.sleep(0.5)
             mail_window.destroy()
 
-
-
         mail_btn = Button(mail_window, text='send', command=lambda: [sent_mail_window()], font=('_Times New Roman', 18))
         mail_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
 
@@ -257,7 +257,7 @@ class UserInter:
         time.sleep(0.1)
         unread_mail_info = tn.read_very_eager().decode('utf-8')
         unread_mail_info_list = unread_mail_info.split('\n')
-        unread_mail_info_list = [x for x in unread_mail_info_list if x!='']
+        unread_mail_info_list = [x for x in unread_mail_info_list if x != '']
         message_num = unread_mail_info_list[0][-1]
         unread_mail_info_list = unread_mail_info_list[1:]
         print(unread_mail_info_list)
@@ -265,20 +265,19 @@ class UserInter:
         text1 = Label(mail_check_window, text=f'you have {message_num} mails', font=('Arial', 20, 'bold'))
         text1.place(relx=0.35, rely=0.05)
 
-
         content = ""
         for one_info in unread_mail_info_list:
             one_info = one_info.split('\t')
             one_info = [x.split(' ') for x in one_info]
             one_info = [x for y in one_info for x in y]
-            one_info = [x for x in one_info if x!='']
-            one_info = one_info[0] + '   ' + one_info[2] + '   ' + one_info[3] + '   ' + one_info[7] + ' | ' + one_info[5] + ' ' + one_info[6] + ' | ' + one_info[8]
+            one_info = [x for x in one_info if x != '']
+            one_info = one_info[0] + '   ' + one_info[2] + '   ' + one_info[3] + '   ' + one_info[7] + ' | ' + one_info[
+                5] + ' ' + one_info[6] + ' | ' + one_info[8]
             content += one_info
             content += '\n'
         print(content)
         message = Label(mail_check_window, text=content, bg='white', font=('Arial', 18), width=40, height=8)
         message.place(relx=0.16, rely=0.15)
-
 
     def send_match_info(self):
         matching_window = Toplevel(self.login_tk)
@@ -307,15 +306,14 @@ class UserInter:
 
         side = StringVar()
         cmb2 = ttk.Combobox(matching_window, textvariable=side, font=('Arial', 14))
-        cmb2.place(relx=0.25, rely=0.35,relwidth=0.22, relheight=0.10)
-        cmb2['value'] = ['white','black']
+        cmb2.place(relx=0.25, rely=0.35, relwidth=0.22, relheight=0.10)
+        cmb2['value'] = ['white', 'black']
 
         message3 = Label(matching_window, text='duration:', font=('Arial', 16, 'bold'))
         message3.place(relx=0.50, rely=0.35)
         duration = StringVar()
         cmb3 = ttk.Entry(matching_window, textvariable=duration, font=('Arial', 14))
-        cmb3.place(relx=0.70, rely=0.35,relwidth=0.22, relheight=0.10)
-
+        cmb3.place(relx=0.70, rely=0.35, relwidth=0.22, relheight=0.10)
 
         def send_match_info_to_sb():
             o = opponent.get()
@@ -333,43 +331,61 @@ class UserInter:
             time.sleep(0.5)
             matching_window.destroy()
 
-
-
-
         send_btn = Button(matching_window, text='send', command=lambda: [send_match_info_to_sb()],
-                           font=('_Times New Roman', 22))
+                          font=('_Times New Roman', 22))
         send_btn.place(relx=0.4, rely=0.60, relwidth=0.2, relheight=0.1)
 
-
-
-
-
-    def accept_the_game(self):
+    def accept_the_game(self, content):
+        self.accept_number = 1
         accept_window = Toplevel(self.login_tk)
         window_show_center(accept_window)
         accept_window.title('Matching Window')
-        #
-        # def yes_function():
-        #
-        #
-        # yes_btn = Button(accept_window, text='Yes', command=lambda: [yes_function()],
-        #                         font=('_Times New Roman', 18))
-        # yes_btn.place(relx=0.8, rely=0.60, relwidth=0.2, relheight=0.1)
-        #
-        # No_btn = Button(accept_window, text='No', command=lambda: [no_function()],
-        #                    font=('_Times New Roman', 22))
-        # No_btn.place(relx=0.4, rely=0.40, relwidth=0.2, relheight=0.1)
+
+        message1 = Label(accept_window, text=content[:content.find("<") - 1], font=('Arial', 22, 'bold'))
+        message1.place(relx=0.18, rely=0.2)
+
+        def yes_function():
+            self.accept_number = 0
+            send_content = content[content.find("<") + 1:content.find(">")]
+            self.tn.write(send_content.encode('ascii') + b'\n\n')
+            time.sleep(0.5)
+            accept_window.destroy()
+
+        def no_function():
+            self.accept_number = 0
+            time.sleep(0.5)
+            accept_window.destroy()
+
+        yes_btn = Button(accept_window, text='Yes', command=lambda: [yes_function()],
+                         font=('_Times New Roman', 20))
+        yes_btn.place(relx=0.2, rely=0.50, relwidth=0.2, relheight=0.1)
+
+        No_btn = Button(accept_window, text='No', command=lambda: [no_function()],
+                        font=('_Times New Roman', 20))
+        No_btn.place(relx=0.6, rely=0.50, relwidth=0.2, relheight=0.1)
+
+        while self.accept_number:
+            time.sleep(1)
 
 
-
-
+    def game(self):
+        # Hai, you can write here
+        time.sleep(0.1)
 
     def monitor(self):
         origin_content = ''
-        while(True):
+        while (True):
             content = self.tn.read_very_eager().decode('utf-8')
-            usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 5 + len(self.username)]
+            usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 5 + len(
+                self.username)]
             content = content.replace(usernameString, '')
+
+            if content.find('invite you for a game') != -1:
+                self.accept_the_game(content)
+            if content.find('Black') != -1 and content.find('White') != -1:
+                # self.game()
+                pass
+
 
             if len(content) == 0:
                 content = origin_content
@@ -381,15 +397,9 @@ class UserInter:
             message = Label(self.login_tk, text=content, bg='white', font=('Arial', 20), width=30, height=4)
             message.place(relx=0.30, rely=0.14)
 
-            # if content.find('invite you for a game') != -1:
-            #     self.accept_the_game()
-            if content.find('Black'):
-                game()
-
             time.sleep(2)
 
     def main_window(self):
-
 
         self.login_tk.title('User Interface')
         self.show_center()
@@ -401,51 +411,43 @@ class UserInter:
         img1 = Label(self.login_tk, image=render1)
         img1.image = render1
         img1.place(relx=0.05, rely=0.1)
-        text1 = ttk.Label(self.login_tk, text=f"User Name:  {self.username}",font=('Arial', 18, 'bold'))
+        text1 = ttk.Label(self.login_tk, text=f"User Name:  {self.username}", font=('Arial', 18, 'bold'))
         text1.place(relx=0.063, rely=0.37)
 
-
-
-
         # function area
-        who_btn = Button(self.login_tk, text='who', command=lambda: [self.who_window()],font=('_Times New Roman', 18))
+        who_btn = Button(self.login_tk, text='who', command=lambda: [self.who_window()], font=('_Times New Roman', 18))
         who_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
 
-        help_btn = Button(self.login_tk, text='help', command=lambda: [self.help_window()], font=('_Times New Roman', 18))
+        help_btn = Button(self.login_tk, text='help', command=lambda: [self.help_window()],
+                          font=('_Times New Roman', 18))
         help_btn.place(relx=0.8, rely=0.3, relwidth=0.15, relheight=0.07)
 
-        exit_btn = Button(self.login_tk, text='exit',command=lambda: [self.exit_window()],font=('_Times New Roman', 18))
+        exit_btn = Button(self.login_tk, text='exit', command=lambda: [self.exit_window()],
+                          font=('_Times New Roman', 18))
         exit_btn.place(relx=0.8, rely=0.20, relwidth=0.15, relheight=0.07)
 
-        shout_btn = Button(self.login_tk, text='shout', command=lambda: [self.shout_window()],font=('_Times New Roman', 18))
+        shout_btn = Button(self.login_tk, text='shout', command=lambda: [self.shout_window()],
+                           font=('_Times New Roman', 18))
         shout_btn.place(relx=0.8, rely=0.40, relwidth=0.15, relheight=0.07)
 
-        mail_btn = Button(self.login_tk, text='send mail', command=lambda: [self.mail_window()],font=('_Times New Roman',18))
+        mail_btn = Button(self.login_tk, text='send mail', command=lambda: [self.mail_window()],
+                          font=('_Times New Roman', 18))
         mail_btn.place(relx=0.8, rely=0.50, relwidth=0.15, relheight=0.07)
 
-        mail_check_btn = Button(self.login_tk, text='check mail', command=lambda: [self.mail_check_window()],font=('_Times New Roman', 18))
+        mail_check_btn = Button(self.login_tk, text='check mail', command=lambda: [self.mail_check_window()],
+                                font=('_Times New Roman', 18))
         mail_check_btn.place(relx=0.8, rely=0.60, relwidth=0.15, relheight=0.07)
 
-        match_btn = Button(self.login_tk, text='begin the game', command=lambda: [self.send_match_info()],font=('_Times New Roman', 22))
+        match_btn = Button(self.login_tk, text='begin the game', command=lambda: [self.send_match_info()],
+                           font=('_Times New Roman', 22))
         match_btn.place(relx=0.4, rely=0.40, relwidth=0.2, relheight=0.1)
-
-
-
 
         # open a thread to parallel computing
         t = threading.Thread(target=self.monitor)
-        t.daemon=True
+        t.daemon = True
         t.start()
 
-
-
-
         self.login_tk.mainloop()
-
-
-
-
-
 
 
 if __name__ == "__main__":
