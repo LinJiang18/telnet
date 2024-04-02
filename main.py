@@ -44,14 +44,11 @@ class Login:
         system_feedback_one = system_feedback.find("You have")
         system_feedback_two = system_feedback.find("unread message.")
         message_num = system_feedback[system_feedback_one + 9]
-        print(system_feedback_one)
-        print(system_feedback_two)
-        print(message_num)
         if (system_feedback_one != -1) and (system_feedback_two != -1):
             print('successful login！')
             showinfo(title='hint', message='successful login!')
             self.login_tk.destroy()
-            user_inter = UserInter(tn,input_username,input_password)
+            user_inter = UserInter(tn,input_username,input_password,message_num)
             user_inter.main_window()
         elif system_feedback_one == -1 or system_feedback_two == -1:
             showerror(title='hint', message='wrong username or password!')
@@ -122,11 +119,12 @@ def window_show_center(login_tk,length = 500, width = 300):
     login_tk.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
 
 class UserInter:
-    def __init__(self,tn,name,password):
+    def __init__(self,tn,name,password,message_num):
         self.tn = tn
         self.login_tk = Tk()
         self.username = name
         self.userpassward = password
+        self.message_num = message_num
         self.thread = None
 
     def show_center(self):
@@ -249,6 +247,40 @@ class UserInter:
         mail_btn = Button(mail_window, text='send', command=lambda: [sent_mail_window()], font=('_Times New Roman', 18))
         mail_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
 
+    def mail_check_window(self):
+        mail_check_window = Toplevel(self.login_tk)
+        window_show_center(mail_check_window, 800, 700)
+        mail_check_window.title('Check Mail')
+
+        tn.write(b"listmail\n\n")
+        time.sleep(0.1)
+        unread_mail_info = tn.read_very_eager().decode('utf-8')
+        unread_mail_info_list = unread_mail_info.split('\n')
+        unread_mail_info_list = [x for x in unread_mail_info_list if x!='']
+        message_num = unread_mail_info_list[0][-1]
+        unread_mail_info_list = unread_mail_info_list[1:]
+        print(unread_mail_info_list)
+
+        text1 = Label(mail_check_window, text=f'you have {message_num} mails', font=('Arial', 20, 'bold'))
+        text1.place(relx=0.35, rely=0.05)
+
+
+        content = ""
+        for one_info in unread_mail_info_list:
+            one_info = one_info.split('\t')
+            one_info = [x.split(' ') for x in one_info]
+            one_info = [x for y in one_info for x in y]
+            one_info = [x for x in one_info if x!='']
+            one_info = one_info[0] + '   ' + one_info[2] + '   ' + one_info[3] + '   ' + one_info[7] + ' | ' + one_info[5] + ' ' + one_info[6] + ' | ' + one_info[8]
+            content += one_info
+            content += '\n'
+        print(content)
+        message = Label(mail_check_window, text=content, bg='white', font=('Arial', 18), width=40, height=8)
+        message.place(relx=0.16, rely=0.15)
+
+
+
+
 
 
     def monitor(self):
@@ -286,6 +318,8 @@ class UserInter:
         text1.place(relx=0.063, rely=0.37)
 
 
+
+
         # function area
         who_btn = Button(self.login_tk, text='who', command=lambda: [self.who_window()],font=('_Times New Roman', 18))
         who_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
@@ -301,6 +335,9 @@ class UserInter:
 
         mail_btn = Button(self.login_tk, text='send mail', command=lambda: [self.mail_window()],font=('_Times New Roman',18))
         mail_btn.place(relx=0.8, rely=0.50, relwidth=0.15, relheight=0.07)
+
+        mail_check_btn = Button(self.login_tk, text='check mail', command=lambda: [self.mail_check_window()],font=('_Times New Roman', 18))
+        mail_check_btn.place(relx=0.8, rely=0.60, relwidth=0.15, relheight=0.07)
 
 
 
