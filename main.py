@@ -1,3 +1,4 @@
+import copy
 import telnetlib
 import threading
 import time
@@ -77,6 +78,55 @@ class Login:
     def return_bind(self, event):
         self.client_login()
 
+    def register(self):
+        register_window = Toplevel(self.login_tk)
+        window_show_center(register_window)
+        register_window.title('Register')
+
+        self.tn.read_until(b'username (guest): ', timeout=0.1)
+        self.tn.write(b'guest\n\n')
+        time.sleep(0.1)
+
+        message1 = Label(register_window, text='Username:', font=('Arial', 16, 'bold'))
+        message1.place(relx=0.05, rely=0.2)
+        message2 = StringVar()
+        cmb1 = ttk.Entry(register_window, textvariable=message2, font=('Arial', 14))
+        cmb1.place(relx=0.3, rely=0.18, relwidth=0.4, relheight=0.12)
+
+        message3 = Label(register_window, text='Password:', font=('Arial', 16, 'bold'))
+        message3.place(relx=0.05, rely=0.4)
+        message4 = StringVar()
+        cmb2 = ttk.Entry(register_window, textvariable=message4, font=('Arial', 14))
+        cmb2.place(relx=0.3, rely=0.38, relwidth=0.4, relheight=0.12)
+
+
+        def register_send():
+            self.tn.read_until(b'< guest: 0 > ', timeout=0.1)
+            self.tn.write(b'register ' + message2.get().encode('ascii') + b' ' + message4.get().encode('ascii') + b'\n\n')
+            print(message4.get())
+            print(len(message4.get()))
+            print(message4.get()[-1])
+            time.sleep(0.1)
+
+            comment5 = self.tn.read_very_eager().decode('utf-8')
+            print(comment5)
+            print(len(comment5))
+            print(comment5[-1])
+            if comment5[:-1] == "user name already exists.":
+                showinfo('hint','User Name Already Registered.')
+            else:
+                showinfo('hint','Successful Registration!')
+
+            time.sleep(0.5)
+            self.tn.write(b'logout\n\n')
+            register_window.destroy()
+
+        register_btn = Button(register_window, text='Register', command=lambda: [register_send()],font=('Arial', 16))
+        register_btn.place(relx=0.35, rely=0.72, relwidth=0.3, relheight=0.15)
+
+
+
+
     def login_window(self):  # 设置登录窗口
         self.login_tk.title('User Login')
         self.show_center()
@@ -105,7 +155,7 @@ class Login:
 
         login_btn = ttk.Button(self.login_tk, text='Login', command=lambda: [self.client_login()])
         login_btn.place(relx=0.4, rely=0.72, relwidth=0.2, relheight=0.07)
-        register_btn = ttk.Button(self.login_tk, text='Register', command=lambda: [self.client_login()])
+        register_btn = ttk.Button(self.login_tk, text='Register', command=lambda: [self.register()])
         register_btn.place(relx=0.4, rely=0.82, relwidth=0.2, relheight=0.07)
 
         self.login_tk.bind('<Return>', self.return_bind)
@@ -251,6 +301,72 @@ class UserInter:
 
         mail_btn = Button(mail_window, text='send', command=lambda: [sent_mail_window()], font=('_Times New Roman', 18))
         mail_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
+
+    def stat_window(self):
+        stat_window = Toplevel(self.login_tk)
+        window_show_center(stat_window)
+        stat_window.title('Stat Info')
+
+        stat_label = Label(stat_window, text='User Name:', font=('Arial', 16, 'bold'))
+        stat_label.place(relx=0.05, rely=0.135)
+        temp_info = copy.copy(self.username)
+        stat_info = StringVar(value=temp_info)
+        stat_entry = ttk.Entry(stat_window, textvariable=stat_info, font=('_Times New Roman', 15))
+        stat_entry.place(relx=0.35, rely=0.135, relwidth=0.3, relheight=0.1)
+
+        def sent_stat_window():
+            self.tn.write(b'stats ' + stat_info.get().encode('ascii') + b'\n\n')
+            time.sleep(0.1)
+
+            contents = self.tn.read_very_eager()
+            var = StringVar()
+            var.set(contents)
+            l = Label(stat_window, textvariable=var, font=('Arial', 16))
+            l.place(relx=0.2, rely=0.27)
+
+        mail_btn = Button(stat_window, text='send', command=lambda: [sent_stat_window()], font=('_Times New Roman', 18))
+        mail_btn.place(relx=0.7, rely=0.14, relwidth=0.15, relheight=0.1)
+
+    def block(self):
+        block_window = Toplevel(self.login_tk)
+        window_show_center(block_window)
+        block_window.title('block')
+
+        block_label = Label(block_window, text='block User: ', font=('Arial', 18, 'bold'))
+        block_label.place(relx=0.1, rely=0.15)
+
+        block_name = StringVar()
+        block_entry = ttk.Entry(block_window, textvariable=block_name, font=('_Times New Roman', 15))
+        block_entry.place(relx=0.1, rely=0.35, relwidth=0.3, relheight=0.13)
+
+        def block_function():
+            name = block_name.get()
+            self.tn.write(b'block ' + name.encode('ascii') + b'\n\n')
+            time.sleep(0.5)
+            showinfo(title='Hint', message='Successful Block！')
+
+
+        un_block_btn = Button(block_window, text='block', command=lambda: [block_function()],
+                                font=('_Times New Roman', 18, 'bold'))
+        un_block_btn.place(relx=0.15, rely=0.6, relwidth=0.2, relheight=0.15)
+
+        un_block_label = Label(block_window, text='unblock User: ', font=('Arial', 18, 'bold'))
+        un_block_label.place(relx=0.6, rely=0.15)
+
+        un_block_name = StringVar()
+        un_block_entry = ttk.Entry(block_window, textvariable=un_block_name, font=('_Times New Roman', 15))
+        un_block_entry.place(relx=0.6, rely=0.35, relwidth=0.3, relheight=0.13)
+
+        def un_block_function():
+            name = un_block_name.get()
+            self.tn.write(b'unblock ' + name.encode('ascii') + b'\n\n')
+            time.sleep(0.5)
+            showinfo(title='Hint', message='Successful Unblock！')
+
+        un_block_btn = Button(block_window, text='unblock', command=lambda: [un_block_function()],
+                           font=('_Times New Roman', 18, 'bold'))
+        un_block_btn.place(relx=0.65, rely=0.6, relwidth=0.2, relheight=0.15)
+
 
     def mail_check_window(self):
         mail_check_window = Toplevel(self.login_tk)
@@ -456,6 +572,40 @@ class UserInter:
         # print("game end")
         # c.root.destroy()
 
+    def quiet(self):
+        self.tn.write(b'quiet\n\n')
+
+    def nonquiet(self):
+        self.tn.write(b'nonquiet\n\n')
+
+    def tell_window(self):
+        tell_window = Toplevel(self.login_tk)
+        window_show_center(tell_window)
+        tell_window.title('Mail')
+
+        tell_people_label = Label(tell_window, text='Tell: ', font=('Arial', 16, 'bold'))
+        tell_people_label.place(relx=0.05, rely=0.335)
+        tell_people_info = StringVar()
+        tell_people_entry = ttk.Entry(tell_window, textvariable=tell_people_info, font=('_Times New Roman', 15))
+        tell_people_entry.place(relx=0.18, rely=0.325, relwidth=0.3, relheight=0.1)
+
+        tell_content_label = Label(tell_window, text='Contents: ', font=('Arial', 16, 'bold'))
+        tell_content_label.place(relx=0.05, rely=0.635)
+        tell_content_text = StringVar()
+        tell_content_entry = ttk.Entry(tell_window, textvariable=tell_content_text, font=('_Times New Roman', 15))
+        tell_content_entry.place(relx=0.30, rely=0.635, relwidth=0.6, relheight=0.1)
+
+        def tell():
+            people = tell_people_info.get()
+            contents = tell_content_text.get()
+            self.tn.write(b'tell ' + people.encode('ascii') + b' ' + contents.encode('ascii') + b'\n\n')
+            time.sleep(0.1)
+            tell_window.destroy()
+
+        tell_btn = Button(tell_window, text='send', command=lambda: [tell()], font=('_Times New Roman', 20))
+        tell_btn.place(relx=0.68, rely=0.30, relwidth=0.25, relheight=0.15)
+
+
     def monitor(self):
         origin_content = ''
         while True:
@@ -492,6 +642,8 @@ class UserInter:
 
             time.sleep(2)
 
+
+
     def main_window(self):
 
         self.login_tk.title('User Interface')
@@ -508,32 +660,55 @@ class UserInter:
         text1.place(relx=0.063, rely=0.37)
 
         # function area
-        who_btn = Button(self.login_tk, text='who', command=lambda: [self.who_window()], font=('_Times New Roman', 18))
-        who_btn.place(relx=0.8, rely=0.1, relwidth=0.15, relheight=0.07)
-
-        help_btn = Button(self.login_tk, text='help', command=lambda: [self.help_window()],
-                          font=('_Times New Roman', 18))
-        help_btn.place(relx=0.8, rely=0.3, relwidth=0.15, relheight=0.07)
-
-        exit_btn = Button(self.login_tk, text='exit', command=lambda: [self.exit_window()],
-                          font=('_Times New Roman', 18))
-        exit_btn.place(relx=0.8, rely=0.20, relwidth=0.15, relheight=0.07)
-
-        shout_btn = Button(self.login_tk, text='shout', command=lambda: [self.shout_window()],
-                           font=('_Times New Roman', 18))
-        shout_btn.place(relx=0.8, rely=0.40, relwidth=0.15, relheight=0.07)
-
-        mail_btn = Button(self.login_tk, text='send mail', command=lambda: [self.mail_window()],
-                          font=('_Times New Roman', 18))
-        mail_btn.place(relx=0.8, rely=0.50, relwidth=0.15, relheight=0.07)
-
-        mail_check_btn = Button(self.login_tk, text='check mail', command=lambda: [self.mail_check_window()],
-                                font=('_Times New Roman', 18))
-        mail_check_btn.place(relx=0.8, rely=0.60, relwidth=0.15, relheight=0.07)
 
         match_btn = Button(self.login_tk, text='begin the game', command=lambda: [self.send_match_info()],
                            font=('_Times New Roman', 22))
         match_btn.place(relx=0.4, rely=0.40, relwidth=0.2, relheight=0.1)
+
+        stat_check_btn = Button(self.login_tk, text='stat info', command=lambda: [self.stat_window()],
+                                font=('_Times New Roman', 18))
+        stat_check_btn.place(relx=0.07, rely=0.46, relwidth=0.15, relheight=0.07)
+
+        who_btn = Button(self.login_tk, text='who', command=lambda: [self.who_window()], font=('_Times New Roman', 18))
+        who_btn.place(relx=0.8, rely=0.05, relwidth=0.15, relheight=0.07)
+
+        help_btn = Button(self.login_tk, text='help', command=lambda: [self.help_window()],
+                          font=('_Times New Roman', 18))
+        help_btn.place(relx=0.8, rely=0.25, relwidth=0.15, relheight=0.07)
+
+        exit_btn = Button(self.login_tk, text='exit', command=lambda: [self.exit_window()],
+                          font=('_Times New Roman', 18))
+        exit_btn.place(relx=0.8, rely=0.15, relwidth=0.15, relheight=0.07)
+
+        shout_btn = Button(self.login_tk, text='shout', command=lambda: [self.shout_window()],
+                           font=('_Times New Roman', 18))
+        shout_btn.place(relx=0.8, rely=0.35, relwidth=0.15, relheight=0.07)
+
+        mail_btn = Button(self.login_tk, text='send mail', command=lambda: [self.mail_window()],
+                          font=('_Times New Roman', 18))
+        mail_btn.place(relx=0.8, rely=0.45, relwidth=0.15, relheight=0.07)
+
+        mail_check_btn = Button(self.login_tk, text='check mail', command=lambda: [self.mail_check_window()],
+                                font=('_Times New Roman', 18))
+        mail_check_btn.place(relx=0.8, rely=0.55, relwidth=0.15, relheight=0.07)
+
+        tell_btn = Button(self.login_tk, text='tell', command=lambda: [self.tell_window()],
+                                font=('_Times New Roman', 18))
+        tell_btn.place(relx=0.8, rely=0.65, relwidth=0.15, relheight=0.07)
+
+        block_btn = Button(self.login_tk, text='block', command=lambda: [self.block()],
+                           font=('_Times New Roman', 18))
+        block_btn.place(relx=0.8, rely=0.75, relwidth=0.15, relheight=0.07)
+
+        match_btn = Button(self.login_tk, text='quiet', command=lambda: [self.quiet()],
+                           font=('_Times New Roman', 18))
+        match_btn.place(relx=0.75, rely=0.85, relwidth=0.10, relheight=0.07)
+
+        match_btn = Button(self.login_tk, text='nonquiet', command=lambda: [self.nonquiet()],
+                           font=('_Times New Roman', 18))
+        match_btn.place(relx=0.88, rely=0.85, relwidth=0.10, relheight=0.07)
+
+
 
         # open a thread to parallel computing
         t = threading.Thread(target=self.monitor)
