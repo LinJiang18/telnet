@@ -254,7 +254,7 @@ class UserInter:
 
     def mail_check_window(self):
         mail_check_window = Toplevel(self.login_tk)
-        window_show_center(mail_check_window, 800, 700)
+        window_show_center(mail_check_window, 800, 600)
         mail_check_window.title('Check Mail')
 
         tn.write(b"listmail\n\n")
@@ -264,7 +264,6 @@ class UserInter:
         unread_mail_info_list = [x for x in unread_mail_info_list if x != '']
         message_num = unread_mail_info_list[0][-1]
         unread_mail_info_list = unread_mail_info_list[1:]
-        print(unread_mail_info_list)
 
         text1 = Label(mail_check_window, text=f'you have {message_num} mails', font=('Arial', 20, 'bold'))
         text1.place(relx=0.35, rely=0.05)
@@ -279,9 +278,56 @@ class UserInter:
                 5] + ' ' + one_info[6] + ' | ' + one_info[8]
             content += one_info
             content += '\n'
-        print(content)
         message = Label(mail_check_window, text=content, bg='white', font=('Arial', 18), width=40, height=8)
         message.place(relx=0.16, rely=0.15)
+
+
+
+        check_mail_label = Label(mail_check_window, text='Check Mail: ', font=('Arial', 19, 'bold'))
+        check_mail_label.place(relx=0.1, rely=0.55)
+
+        check_mail_num = StringVar()
+        cmb1 = ttk.Combobox(mail_check_window, textvariable=check_mail_num, font=('Arial', 20))
+        cmb1.place(relx=0.3, rely=0.55,relwidth=0.15, relheight=0.05)
+        cmb1['value'] = list(range(len(unread_mail_info_list)))
+
+        def show_mail_window():
+            num = int(check_mail_num.get())
+            show_mail_window = Toplevel(self.login_tk)
+            window_show_center(show_mail_window)
+            show_mail_window.title('Show Mail')
+            writecontent = f"readmail {num}\n\n"
+            self.tn.write(writecontent.encode('ascii'))
+            print(writecontent)
+            time.sleep(0.1)
+            contents = self.tn.read_very_eager().decode('utf-8')
+            var = StringVar()
+            var.set(contents)
+            l = Label(show_mail_window, textvariable=var, font=('Arial', 20))
+            l.place(relx=0.05, rely=0.05)
+
+
+        check_mail_btn = Button(mail_check_window, text='check', command=lambda: [show_mail_window()], font=('_Times New Roman', 18, 'bold'))
+        check_mail_btn.place(relx=0.2, rely=0.65, relwidth=0.15, relheight=0.07)
+
+        delete_mail_label = Label(mail_check_window, text='Delete Mail: ', font=('Arial', 19, 'bold'))
+        delete_mail_label.place(relx=0.5, rely=0.55)
+
+        delete_mail_num = StringVar()
+        cmb2 = ttk.Combobox(mail_check_window, textvariable=delete_mail_num, font=('Arial', 20))
+        cmb2.place(relx=0.7, rely=0.55,relwidth=0.15, relheight=0.05)
+        cmb2['value'] = list(range(len(unread_mail_info_list)))
+
+        def delete_mail_window():
+            num = int(delete_mail_num.get())
+            writecontent = f"deletemail {num}\n\n"
+            self.tn.write(writecontent.encode('ascii'))
+            showinfo(title='Hint', message='Successful Delete！')
+            time.sleep(0.5)
+            mail_check_window.destroy()
+
+        delete_mail_btn = Button(mail_check_window, text='delete', command=lambda: [delete_mail_window()], font=('_Times New Roman', 18, 'bold'))
+        delete_mail_btn.place(relx=0.6, rely=0.65, relwidth=0.15, relheight=0.07)
 
     def send_match_info(self):
         matching_window = Toplevel(self.login_tk)
