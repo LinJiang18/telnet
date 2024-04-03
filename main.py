@@ -1,11 +1,13 @@
+import telnetlib
+import threading
+import time
 from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import showerror, showinfo
-import threading
-import telnetlib
-import time
 
 from PIL import Image, ImageTk
+
+from Chess import Chess
 
 
 class Connect:
@@ -131,6 +133,8 @@ class UserInter:
         self.thread = None
         self.accept_number = 1
 
+        self.chess = None
+
     def show_center(self):
         sw = self.login_tk.winfo_screenwidth()
         sh = self.login_tk.winfo_screenheight()
@@ -178,7 +182,7 @@ class UserInter:
         help_window.title('Help')
         self.tn.write(b"help\n\n")
         time.sleep(0.1)
-        contents = self.tn.read_very_eager().decode('utf-8')
+        contents = self.tn.read_very_eager()
         var = StringVar()
         var.set(contents)
         l = Label(help_window, textvariable=var, font=('Arial', 20))
@@ -250,7 +254,7 @@ class UserInter:
 
     def mail_check_window(self):
         mail_check_window = Toplevel(self.login_tk)
-        window_show_center(mail_check_window, 800, 600)
+        window_show_center(mail_check_window, 800, 700)
         mail_check_window.title('Check Mail')
 
         tn.write(b"listmail\n\n")
@@ -260,6 +264,7 @@ class UserInter:
         unread_mail_info_list = [x for x in unread_mail_info_list if x != '']
         message_num = unread_mail_info_list[0][-1]
         unread_mail_info_list = unread_mail_info_list[1:]
+        print(unread_mail_info_list)
 
         text1 = Label(mail_check_window, text=f'you have {message_num} mails', font=('Arial', 20, 'bold'))
         text1.place(relx=0.35, rely=0.05)
@@ -274,57 +279,9 @@ class UserInter:
                 5] + ' ' + one_info[6] + ' | ' + one_info[8]
             content += one_info
             content += '\n'
+        print(content)
         message = Label(mail_check_window, text=content, bg='white', font=('Arial', 18), width=40, height=8)
         message.place(relx=0.16, rely=0.15)
-
-
-
-        check_mail_label = Label(mail_check_window, text='Check Mail: ', font=('Arial', 19, 'bold'))
-        check_mail_label.place(relx=0.1, rely=0.55)
-
-        check_mail_num = StringVar()
-        cmb1 = ttk.Combobox(mail_check_window, textvariable=check_mail_num, font=('Arial', 20))
-        cmb1.place(relx=0.3, rely=0.55,relwidth=0.15, relheight=0.05)
-        cmb1['value'] = list(range(len(unread_mail_info_list)))
-
-        def show_mail_window():
-            num = int(check_mail_num.get())
-            show_mail_window = Toplevel(self.login_tk)
-            window_show_center(show_mail_window)
-            show_mail_window.title('Show Mail')
-            writecontent = f"readmail {num}\n\n"
-            self.tn.write(writecontent.encode('ascii'))
-            print(writecontent)
-            time.sleep(0.1)
-            contents = self.tn.read_very_eager().decode('utf-8')
-            var = StringVar()
-            var.set(contents)
-            l = Label(show_mail_window, textvariable=var, font=('Arial', 20))
-            l.place(relx=0.05, rely=0.05)
-
-
-        check_mail_btn = Button(mail_check_window, text='check', command=lambda: [show_mail_window()], font=('_Times New Roman', 18, 'bold'))
-        check_mail_btn.place(relx=0.2, rely=0.65, relwidth=0.15, relheight=0.07)
-
-        delete_mail_label = Label(mail_check_window, text='Delete Mail: ', font=('Arial', 19, 'bold'))
-        delete_mail_label.place(relx=0.5, rely=0.55)
-
-        delete_mail_num = StringVar()
-        cmb2 = ttk.Combobox(mail_check_window, textvariable=delete_mail_num, font=('Arial', 20))
-        cmb2.place(relx=0.7, rely=0.55,relwidth=0.15, relheight=0.05)
-        cmb2['value'] = list(range(len(unread_mail_info_list)))
-
-        def delete_mail_window():
-            num = int(delete_mail_num.get())
-            writecontent = f"deletemail {num}\n\n"
-            self.tn.write(writecontent.encode('ascii'))
-            showinfo(title='Hint', message='Successful Delete！')
-            time.sleep(0.5)
-            mail_check_window.destroy()
-
-        delete_mail_btn = Button(mail_check_window, text='delete', command=lambda: [delete_mail_window()], font=('_Times New Roman', 18, 'bold'))
-        delete_mail_btn.place(relx=0.6, rely=0.65, relwidth=0.15, relheight=0.07)
-
 
     def send_match_info(self):
         matching_window = Toplevel(self.login_tk)
@@ -414,14 +371,48 @@ class UserInter:
         while self.accept_number:
             time.sleep(1)
 
-
-    def game(self):
+    def game(self, content):
         # Hai, you can write here
-        time.sleep(0.1)
+        print(content)
+        content_list = content.split("\n")
+        board = []
+        no_count = 9
+        for i in [5, 6, 7]:
+            c = content_list[i].split(" ")
+            for j in [2, 4, 6]:
+                if c[j] == ".":
+                    board.append(0)
+                    no_count -= 1
+                elif c[j] == "O":
+                    board.append(1)
+                else:
+                    board.append(2)
+        time_ = content_list[2].split()
+        time1, time2 = time_[1], time_[3]
+        d = content_list[1].split()
+        black, white = d[1], d[3]
+        me = False
+        if (no_count % 2 == 0 and black == self.username) or (no_count % 2 == 1 and white == self.username):
+            me = True
+
+        if black == self.username:
+            color = "black"
+        else:
+            color = "white"
+
+        print("me:", me)
+        if not self.chess:
+            self.chess = Chess(board=board, tn=self.tn, root=self.login_tk, color=color, my_turn=me, time1=time1,
+                               time2=time2)
+        else:
+            self.chess.update(board=board, my_turn=me, time1=time1, time2=time2)
+
+        # print("game end")
+        # c.root.destroy()
 
     def monitor(self):
         origin_content = ''
-        while (True):
+        while True:
             content = self.tn.read_very_eager().decode('utf-8')
             usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 5 + len(
                 self.username)]
@@ -429,9 +420,19 @@ class UserInter:
 
             if content.find('invite you for a game') != -1:
                 self.accept_the_game(content)
-            if content.find('Black') != -1 and content.find('White') != -1:
-                # self.game()
-                pass
+
+            if content.find('You Win') != -1 or content.find('You Lose') != -1:
+                # time.sleep(2)
+                # self.login_tk.after(2000, self.chess.destroy())
+                self.chess.destroy(content)
+                time.sleep(5)
+                self.chess.root.destroy()
+                self.chess = None
+
+
+            else:
+                if content.find('Black') != -1 and content.find('White') != -1:
+                    self.game(content)
 
             if len(content) == 0:
                 content = origin_content
