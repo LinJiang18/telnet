@@ -385,6 +385,11 @@ class UserInter:
         text1.place(relx=0.35, rely=0.05)
 
         content = ""
+
+        if not unread_mail_info_list:
+            mail_check_window.destory()
+            self.mail_check_window()
+
         for one_info in unread_mail_info_list:
             one_info = one_info.split('\t')
             one_info = [x.split(' ') for x in one_info]
@@ -610,7 +615,7 @@ class UserInter:
         origin_content = ''
         while True:
             content = self.tn.read_very_eager().decode('utf-8')
-            usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 5 + len(
+            usernameString = content[content.find(f'<{self.username}: '):content.find(f'<{self.username}: ') + 6 + len(
                 self.username)]
             content = content.replace(usernameString, '')
 
